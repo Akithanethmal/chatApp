@@ -23,9 +23,10 @@ import Constants from "expo-constants";
 import * as Permissions from "expo-permissions";
 import { ImageBackground, StyleSheet, View } from "react-native";
 import * as firebase from "firebase";
-import { AuthParamList, TabTwoParamList } from "../types";
+import { AuthParamList, TabTwoParamList, User } from "../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
+import Loading from "./Loading";
 
 type ProfileRouteProps = RouteProp<TabTwoParamList, "Profile">;
 type ProfileNavigationProps = StackNavigationProp<TabTwoParamList, "Profile">;
@@ -43,20 +44,30 @@ const image = {
 interface ProfileProps {}
 
 const Profile = (props: Props) => {
-  const user = firebase.auth().currentUser;
+  const User = firebase.auth().currentUser;
   const [image, setImage] = React.useState(" ");
   const [isLoading, setLoading] = React.useState(false);
+  const [user, setUser] = React.useState<User>({});
 
   React.useEffect(() => {
     getPermissionAsync();
     getUserData();
   }, []);
   const getUserData = async () => {
+    setLoading(true);
+    setUser({});
     firebase
       .database()
-      .ref(`User/${user?.uid}`)
+      .ref(`User/${User?.uid}`)
       .once("value", function (snapshot) {
         console.log(snapshot.val());
+        let temp: User = snapshot.val();
+        setUser(temp);
+        setLoading(false);
+      })
+      .catch((error) => {
+        setLoading(false);
+        alert(error.message);
       });
   };
 
@@ -102,7 +113,7 @@ const Profile = (props: Props) => {
       xhr.open("GET", image, true);
       xhr.send(null);
     });
-    const uid = user?.uid;
+    const uid = User?.uid;
     const ref = firebase
       .storage()
       .ref("/Shop/" + uid)
@@ -129,6 +140,9 @@ const Profile = (props: Props) => {
       }
     );
   };
+  if (isLoading) {
+    return <Loading />;
+  }
   return (
     <Container>
       <Content>
@@ -158,7 +172,9 @@ const Profile = (props: Props) => {
               justifyContent: "center",
             }}
           >
-            <Text style={{ fontSize: 25, fontWeight: "bold" }}>Alice Tall</Text>
+            <Text style={{ fontSize: 25, fontWeight: "bold" }}>
+              User.FirstName
+            </Text>
           </Row>
           <Row
             style={{
@@ -185,7 +201,7 @@ const Profile = (props: Props) => {
                   />
                 </Left>
                 <Body>
-                  <Text style={{ color: Color.BLACK }}>FirstName:Alice</Text>
+          <Text style={{ color: Color.BLACK }}>{user.fname}</Text>
                 </Body>
               </ListItem>
               <ListItem
@@ -202,7 +218,7 @@ const Profile = (props: Props) => {
                   />
                 </Left>
                 <Body>
-                  <Text style={{ color: Color.BLACK }}>LastName:Tall</Text>
+                  <Text style={{ color: Color.BLACK }}>{user.lname}</Text>
                 </Body>
               </ListItem>
               <ListItem
@@ -216,7 +232,7 @@ const Profile = (props: Props) => {
                 </Left>
                 <Body>
                   <Text style={{ color: Color.BLACK }}>
-                    Email:avhfrgh100@gmail.com
+                    {user.email}
                   </Text>
                 </Body>
               </ListItem>
@@ -231,7 +247,22 @@ const Profile = (props: Props) => {
                 </Left>
                 <Body>
                   <Text style={{ color: Color.BLACK }}>
-                    PhoneNumber:11287000364
+                    {user.gender}
+                  </Text>
+                </Body>
+              </ListItem>
+              <ListItem
+                icon
+                noBorder
+                style={{ width: Layout.window.height }}
+                noIndent
+              >
+                <Left>
+                  <Icon active style={{ color: Color.GRAY }} name="ios-call" />
+                </Left>
+                <Body>
+                  <Text style={{ color: Color.BLACK }}>
+                    {user.dob}
                   </Text>
                 </Body>
               </ListItem>
