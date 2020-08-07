@@ -27,7 +27,7 @@ const Register = (props: RegisterProps) => {
   const [password, setpassword] = React.useState("");
   const [cpassword, setcpassword] = React.useState("");
   const [dob, setdob] = React.useState<Date>(new Date());
-  const [gender, setgender] = React.useState("female");
+  const [gender, setgender] = React.useState("Female");
 
   const register = () => {
     firebase
@@ -48,6 +48,7 @@ const Register = (props: RegisterProps) => {
             lname: lname,
             dob: dob.toString(),
             gender: gender,
+            email: email,
           })
           .catch((err) => alert(err));
       })
@@ -164,8 +165,8 @@ const Register = (props: RegisterProps) => {
                   selectedValue={gender}
                   onValueChange={(value) => setgender(value)}
                 >
-                  <Picker.Item label="Male" value="male" />
-                  <Picker.Item label="Female" value="female" />
+                  <Picker.Item label="Male" value="Male" />
+                  <Picker.Item label="Female" value="Female" />
                 </Picker>
               </Item>
             </Form>

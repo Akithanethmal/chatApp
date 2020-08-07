@@ -14,6 +14,7 @@ export type TabOneParamList={
 }
 export type TabTwoParamList={
     Profile:undefined;
+    EditProfile:undefined;
 }
 export type TabThreeParamList={
     NewFriends:undefined;
@@ -28,6 +29,7 @@ export type User ={
     dob?:string;
     chats?:Array<string|null>;
     friends?:Array<string|undefined>;
+    photoUrl?:string;
 }
 
 export type Chat = {

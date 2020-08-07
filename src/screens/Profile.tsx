@@ -36,15 +36,11 @@ type Props = {
   navigation: ProfileNavigationProps;
 };
 
-const image = {
-  uri:
-    "https://www.shutterstock.com/blog/wp-content/uploads/sites/5/2017/08/nature-design.jpg",
-};
-
 interface ProfileProps {}
 
 const Profile = (props: Props) => {
   const User = firebase.auth().currentUser;
+  const dbRef = firebase.database();
   const [image, setImage] = React.useState(" ");
   const [isLoading, setLoading] = React.useState(false);
   const [user, setUser] = React.useState<User>({});
@@ -89,14 +85,14 @@ const Profile = (props: Props) => {
       });
       if (!result.cancelled) {
         setImage(result.uri);
+        uploadImageAsync(result.uri);
       }
-
       console.log(result);
     } catch (E) {
       console.log(E);
     }
   };
-  const uploadImageAsync = async () => {
+  const uploadImageAsync = async (img: string) => {
     setLoading(true);
     const blob: Blob = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -110,14 +106,14 @@ const Profile = (props: Props) => {
         props.navigation.pop();
       };
       xhr.responseType = "blob";
-      xhr.open("GET", image, true);
+      xhr.open("GET", img, true);
       xhr.send(null);
     });
     const uid = User?.uid;
     const ref = firebase
       .storage()
-      .ref("/Shop/" + uid)
-      .child(new Date().getTime().toString() + ".jpg");
+      .ref("/User/" + uid)
+      .child("dp.jpg");
     const uploadTask = ref.put(blob);
 
     uploadTask.on(
@@ -130,12 +126,23 @@ const Profile = (props: Props) => {
       function (error) {
         setLoading(false);
         alert(error.message);
-        props.navigation.pop();
       },
       () => {
         uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
           console.log("File available at", downloadURL);
           setImage(downloadURL);
+          dbRef
+            .ref("/User/" + User?.uid + "/")
+            .update({ photoUrl: downloadURL })
+            .then(() => {
+              setLoading(false);
+              return;
+            })
+            .catch((error) => {
+              alert(error.message);
+              setLoading(false);
+              return;
+            });
         });
       }
     );
@@ -151,6 +158,7 @@ const Profile = (props: Props) => {
             <ImageBackground source={{ uri: image }} style={styles.image}>
               <Avatar
                 rounded
+                title={user.fname?.charAt(0)}
                 size="xlarge"
                 showAccessory
                 onAccessoryPress={() => _pickImage()}
@@ -160,7 +168,7 @@ const Profile = (props: Props) => {
                   borderColor: Color.WHITE,
                 }}
                 source={{
-                  uri: "https://randomuser.me/api/portraits/women/65.jpg",
+                  uri: image,
                 }}
               />
             </ImageBackground>
@@ -170,10 +178,11 @@ const Profile = (props: Props) => {
               height: Layout.window.height * 0.05,
               flex: 1,
               justifyContent: "center",
+              marginVertical: 10,
             }}
           >
             <Text style={{ fontSize: 25, fontWeight: "bold" }}>
-              User.FirstName
+              {user.fname} {user.lname}
             </Text>
           </Row>
           <Row
@@ -194,45 +203,28 @@ const Profile = (props: Props) => {
                 noIndent
               >
                 <Left>
-                  <Icon
-                    active
-                    style={{ color: Color.GRAY }}
-                    name="ios-person"
-                  />
-                </Left>
-                <Body>
-          <Text style={{ color: Color.BLACK }}>{user.fname}</Text>
-                </Body>
-              </ListItem>
-              <ListItem
-                icon
-                noBorder
-                style={{ width: Layout.window.height }}
-                noIndent
-              >
-                <Left>
-                  <Icon
-                    active
-                    style={{ color: Color.GRAY }}
-                    name="ios-person"
-                  />
-                </Left>
-                <Body>
-                  <Text style={{ color: Color.BLACK }}>{user.lname}</Text>
-                </Body>
-              </ListItem>
-              <ListItem
-                icon
-                noBorder
-                style={{ width: Layout.window.height }}
-                noIndent
-              >
-                <Left>
                   <Icon active style={{ color: Color.GRAY }} name="ios-mail" />
                 </Left>
                 <Body>
+                  <Text style={{ color: Color.BLACK }}>{user.email}</Text>
+                </Body>
+              </ListItem>
+              <ListItem
+                icon
+                noBorder
+                style={{ width: Layout.window.height }}
+                noIndent
+              >
+                <Left>
+                  <Icon
+                    active
+                    style={{ color: Color.GRAY }}
+                    name="ios-person"
+                  />
+                </Left>
+                <Body>
                   <Text style={{ color: Color.BLACK }}>
-                    {user.email}
+                    Gender {user.gender}
                   </Text>
                 </Body>
               </ListItem>
@@ -243,26 +235,18 @@ const Profile = (props: Props) => {
                 noIndent
               >
                 <Left>
-                  <Icon active style={{ color: Color.GRAY }} name="ios-call" />
+                  <Icon
+                    type="MaterialCommunityIcons"
+                    active
+                    style={{ color: Color.GRAY }}
+                    name="cake-variant"
+                  />
                 </Left>
                 <Body>
                   <Text style={{ color: Color.BLACK }}>
-                    {user.gender}
-                  </Text>
-                </Body>
-              </ListItem>
-              <ListItem
-                icon
-                noBorder
-                style={{ width: Layout.window.height }}
-                noIndent
-              >
-                <Left>
-                  <Icon active style={{ color: Color.GRAY }} name="ios-call" />
-                </Left>
-                <Body>
-                  <Text style={{ color: Color.BLACK }}>
-                    {user.dob}
+                    {new Date(user.dob ? user.dob : "")
+                      .toDateString()
+                      .substr(4, 12)}
                   </Text>
                 </Body>
               </ListItem>

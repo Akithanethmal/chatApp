@@ -7,6 +7,7 @@ import { ChatList, ChatView, AddChat } from '../screens/Chat';
 import Profile from '../screens/Profile';
 import Color from '../constants/Color';
 import NewFriends from '../screens/NewFriends';
+import EditProfile from '../screens/EditProfile';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -72,6 +73,7 @@ function TabTwo(){
     return(
         <TabTwoStack.Navigator>
             <TabTwoStack.Screen name='Profile' component={Profile}/>
+            <TabTwoStack.Screen name='EditProfile' component={EditProfile}/>
         </TabTwoStack.Navigator>
     );
 }
