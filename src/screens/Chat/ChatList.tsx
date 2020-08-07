@@ -36,24 +36,24 @@ type Props = {
   navigation: ChatListNavigationProps;
 };
 type UserWithChatId = {
-  user:User;
-  chatId:string|null|undefined;
-}
+  user: User;
+  chatId: string | null | undefined;
+};
 interface ChatListProps {}
 
 const ChatList = (props: Props) => {
   const user = firebase.auth().currentUser;
   const ref = firebase.database();
   const [chats, setChats] = React.useState<Array<Chat>>([]);
-  const [userArray, setUser] = React.useState<Array<UserWithChatId>>([])
+  const [userArray, setUser] = React.useState<Array<UserWithChatId>>([]);
   const [isLoading, setLoading] = React.useState<boolean>(true);
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     loadChats();
-    return()=>{
-      setChats([])
-    }
-  },[])
+    return () => {
+      setChats([]);
+    };
+  }, []);
 
   const loadChats = () => {
     setLoading(true);
@@ -76,25 +76,25 @@ const ChatList = (props: Props) => {
             tempChat = snapshot.val();
             tempChat.id = value;
             setChats((prev) => [...prev, tempChat]);
-            let userArray = tempChat.users?tempChat.users:[]
+            let userArray = tempChat.users ? tempChat.users : [];
 
-            let otherUser:string|undefined;
-            if(userArray[0] === user?.uid){
+            let otherUser: string | undefined;
+            if (userArray[0] === user?.uid) {
               otherUser = userArray[1];
-            }
-            else{
+            } else {
               otherUser = userArray[0];
             }
-            ref.ref('/User/'+otherUser+'/').once('value')
-            .then((snapshot1)=>{
-              let otherUserData:User = snapshot1.val();
-              let chatUser:UserWithChatId={
-                chatId:value,
-                user:otherUserData,
-              }
-              setUser(prev=>[...prev,chatUser]);
-            })
-
+            ref
+              .ref("/User/" + otherUser + "/")
+              .once("value")
+              .then((snapshot1) => {
+                let otherUserData: User = snapshot1.val();
+                let chatUser: UserWithChatId = {
+                  chatId: value,
+                  user: otherUserData,
+                };
+                setUser((prev) => [...prev, chatUser]);
+              });
           })
           .catch((error) => {
             setLoading(false);
@@ -105,48 +105,54 @@ const ChatList = (props: Props) => {
     });
   };
 
-  if(isLoading)
-  {
-    return(
-      <Loading/>
-    )
+  if (isLoading) {
+    return <Loading />;
   }
 
   return (
     <Container>
       <Content>
-        <List style={{flex:1}}>
-          {chats.length === 0 ? 
-          (
-            <View style={{flex:1,justifyContent:'center', alignItems:'center', marginTop:40}}>
-              <Text style={{fontWeight:'bold', color:Color.NAVYBLUE}}>No Chats Available!</Text>
+        <List style={{ flex: 1 }}>
+          {chats.length === 0 ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: 40,
+              }}
+            >
+              <Text style={{ fontWeight: "bold", color: Color.NAVYBLUE }}>
+                No Chats Available!
+              </Text>
             </View>
-          ) : 
-          ( userArray.map((value, i)=>{
-            return(
-              <ListItem
-               avatar 
-               key={i}
-               onPress={()=>props.navigation.push('ChatView',{chatId:value.chatId,title:value.user.fname+" "+value.user.lname})}
-              >
-              <Left>
-                <Thumbnail
-                  source={{
-                    uri:
-                      "https://notednames.com/ImgProfile/hkoh_Amy%20Acker.jpg",
-                  }}
-                />
-              </Left>
-              <Body>
-                <Text>{value.user.fname+' '+value.user.lname}</Text>
-                <Text note>
-                  {value.user.email}
-                </Text>
-              </Body>
-            </ListItem>
-            )
-          })
-            
+          ) : (
+            userArray.map((value, i) => {
+              return (
+                <ListItem
+                  avatar
+                  key={i}
+                  onPress={() =>
+                    props.navigation.push("ChatView", {
+                      chatId: value.chatId,
+                      title: value.user.fname + " " + value.user.lname,
+                    })
+                  }
+                >
+                  <Left>
+                    <Thumbnail
+                      source={{
+                        uri: value.user.photoUrl ? value.user.photoUrl : " ",
+                      }}
+                    />
+                  </Left>
+                  <Body>
+                    <Text>{value.user.fname + " " + value.user.lname}</Text>
+                    <Text note>{value.user.email}</Text>
+                  </Body>
+                </ListItem>
+              );
+            })
           )}
         </List>
       </Content>

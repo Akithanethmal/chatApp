@@ -42,6 +42,7 @@ const Profile = (props: Props) => {
   const User = firebase.auth().currentUser;
   const dbRef = firebase.database();
   const [image, setImage] = React.useState(" ");
+  const [coverImage, setCoverImage] = React.useState(" ");
   const [isLoading, setLoading] = React.useState(false);
   const [user, setUser] = React.useState<User>({});
 
@@ -59,6 +60,8 @@ const Profile = (props: Props) => {
         console.log(snapshot.val());
         let temp: User = snapshot.val();
         setUser(temp);
+        setImage(temp.photoUrl ? temp.photoUrl : " ");
+        setCoverImage(temp.coverPhotoUrl ? temp.coverPhotoUrl : " ");
         setLoading(false);
       })
       .catch((error) => {
@@ -86,6 +89,23 @@ const Profile = (props: Props) => {
       if (!result.cancelled) {
         setImage(result.uri);
         uploadImageAsync(result.uri);
+      }
+      console.log(result);
+    } catch (E) {
+      console.log(E);
+    }
+  };
+  const _pickCoverImage = async () => {
+    try {
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+      if (!result.cancelled) {
+        setCoverImage(result.uri);
+        uploadCoverImageAsync(result.uri);
       }
       console.log(result);
     } catch (E) {
@@ -147,6 +167,60 @@ const Profile = (props: Props) => {
       }
     );
   };
+  const uploadCoverImageAsync = async (coverImg: string) => {
+    setLoading(true);
+    const blob: Blob = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        resolve(xhr.response);
+      };
+      xhr.onerror = function (e) {
+        console.log(e);
+        reject(new TypeError("Network request failed"));
+        setLoading(false);
+        props.navigation.pop();
+      };
+      xhr.responseType = "blob";
+      xhr.open("GET", coverImg, true);
+      xhr.send(null);
+    });
+    const uid = User?.uid;
+    const ref = firebase
+      .storage()
+      .ref("/User/" + uid)
+      .child("cover.jpg");
+    const uploadTask = ref.put(blob);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        var progress = snapshot.bytesTransferred / snapshot.totalBytes;
+        console.log("Upload is " + progress + "% done");
+      },
+      function (error) {
+        setLoading(false);
+        alert(error.message);
+      },
+      () => {
+        uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+          console.log("File available at", downloadURL);
+          setCoverImage(downloadURL);
+          dbRef
+            .ref("/User/" + User?.uid + "/")
+            .update({ coverPhotoUrl: downloadURL })
+            .then(() => {
+              setLoading(false);
+              return;
+            })
+            .catch((error) => {
+              alert(error.message);
+              setLoading(false);
+              return;
+            });
+        });
+      }
+    );
+  };
   if (isLoading) {
     return <Loading />;
   }
@@ -155,7 +229,7 @@ const Profile = (props: Props) => {
       <Content>
         <Grid>
           <Row style={{ height: Layout.window.height * 0.3 }}>
-            <ImageBackground source={{ uri: image }} style={styles.image}>
+            <ImageBackground source={{ uri: coverImage }} style={styles.image}>
               <Avatar
                 rounded
                 title={user.fname?.charAt(0)}
@@ -163,14 +237,43 @@ const Profile = (props: Props) => {
                 showAccessory
                 onAccessoryPress={() => _pickImage()}
                 containerStyle={{
-                  marginTop: 60,
+                  top: 50,
                   borderWidth: 4,
                   borderColor: Color.WHITE,
+                  position: "absolute",
+                  zIndex: 1,
                 }}
                 source={{
                   uri: image,
                 }}
               />
+              <View
+                style={{
+                  width: Layout.window.width,
+                  backgroundColor: Color.TRANSPARENT,
+                  height: Layout.window.height * 0.3,
+                  justifyContent: "flex-end",
+                  alignItems: "flex-end",
+                }}
+              >
+                <Button
+                  light
+                  onPress={() => _pickCoverImage()}
+                  style={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 50,
+                    height: 50,
+                    margin: 10,
+                  }}
+                >
+                  <Icon
+                    name="md-camera"
+                    type="Ionicons"
+                    style={{ color: Color.WHITE }}
+                  />
+                </Button>
+              </View>
             </ImageBackground>
           </Row>
           <Row
@@ -178,20 +281,15 @@ const Profile = (props: Props) => {
               height: Layout.window.height * 0.05,
               flex: 1,
               justifyContent: "center",
-              marginVertical: 10,
+              marginTop: 45,
+              marginBottom: 10,
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
             <Text style={{ fontSize: 25, fontWeight: "bold" }}>
               {user.fname} {user.lname}
             </Text>
-          </Row>
-          <Row
-            style={{
-              height: Layout.window.height * 0.05,
-              flex: 1,
-              justifyContent: "center",
-            }}
-          >
             <Text note>Freelance Developer</Text>
           </Row>
           <Row style={{ height: Layout.window.height * 0.4 }}>
@@ -266,7 +364,7 @@ const styles = StyleSheet.create({
   image: {
     flex: 1,
     resizeMode: "cover",
-    justifyContent: "center",
+    justifyContent: "flex-end",
     alignItems: "center",
   },
 });

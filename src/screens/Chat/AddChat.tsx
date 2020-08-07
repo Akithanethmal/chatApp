@@ -17,6 +17,7 @@ import {
 } from "native-base";
 import Color from "../../constants/Color";
 import Loading from "../Loading";
+import { registerCustomIconType } from "react-native-elements";
 
 interface AddChatProps {}
 
@@ -25,6 +26,7 @@ const AddChat = (props: AddChatProps) => {
   const ref = firebase.database();
   const [userList, setUserList] = React.useState<Array<User>>([]);
   const [isLoading, setLoading] = React.useState<boolean>(true);
+  const [image, setImage] = React.useState(" ");
 
   React.useEffect(() => {
     loadData();
@@ -57,7 +59,6 @@ const AddChat = (props: AddChatProps) => {
           });
         } else {
           setLoading(false);
-          return;
         }
         for (let key in userData) {
           if (key !== user.uid) {
@@ -170,7 +171,7 @@ const AddChat = (props: AddChatProps) => {
                   <Left style={{ alignItems: "center" }}>
                     <Thumbnail
                       source={{
-                        uri: "https://randomuser.me/api/portraits/women/65.jpg",
+                        uri: value.photoUrl ? value.photoUrl : " ",
                       }}
                     />
                     <Body>
