@@ -17,6 +17,7 @@ import {
 import color from "../constants/Color";
 import Layout from "../constants/Layout";
 import * as firebase from "firebase";
+import Loading from "./Loading";
 
 interface RegisterProps {}
 
@@ -27,9 +28,19 @@ const Register = (props: RegisterProps) => {
   const [password, setpassword] = React.useState("");
   const [cpassword, setcpassword] = React.useState("");
   const [dob, setdob] = React.useState<Date>(new Date());
-  const [gender, setgender] = React.useState("Female");
+  const [gender, setgender] = React.useState("");
+  const [isLoading, setLoading] = React.useState<boolean>(false);
 
   const register = () => {
+    if (password !== cpassword) {
+      alert("Password didn't match!");
+      setcpassword("");
+      setpassword("");
+      return false;
+    }
+    if (!validation()) {
+      return;
+    }
     firebase
       .auth()
       .createUserWithEmailAndPassword(email, password)
@@ -57,6 +68,31 @@ const Register = (props: RegisterProps) => {
         alert(err);
       });
   };
+
+  const validation = () => {
+    if (!fname) {
+      alert("First Name cannot be empty!");
+      return false;
+    }
+    if (!lname) {
+      alert("Last Name cannot be empty!");
+      return false;
+    }
+    if (!password) {
+      alert("Enter your password!");
+      return false;
+    }
+    if (!cpassword) {
+      alert("Enter your confirm password!");
+      return false;
+    }
+    return true;
+  };
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
     <Container>
       <Content>
