@@ -15,6 +15,7 @@ export type TabOneParamList = {
 export type TabTwoParamList = {
   Profile: undefined;
   EditProfile: undefined;
+  ProfileSetting: undefined;
 };
 export type TabThreeParamList = {
   NewFriends: undefined;

@@ -27,6 +27,7 @@ import { AuthParamList, TabTwoParamList, User } from "../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import Loading from "./Loading";
+import { FloatingAction } from "react-native-floating-action";
 
 type ProfileRouteProps = RouteProp<TabTwoParamList, "Profile">;
 type ProfileNavigationProps = StackNavigationProp<TabTwoParamList, "Profile">;
@@ -46,9 +47,35 @@ const Profile = (props: Props) => {
   const [isLoading, setLoading] = React.useState(false);
   const [user, setUser] = React.useState<User>({});
 
+  const actions = [
+    {
+      text: "setting",
+      icon: (
+        <Icon name="settings" type="Ionicons" style={{ color: Color.WHITE }} />
+      ),
+      name: "bt_1",
+      position: 1,
+      buttonSize: 55,
+      color: Color.NAVYBLUE,
+    },
+    {
+      text: "edit",
+      icon: (
+        <Icon name="md-create" type="Ionicons" style={{ color: Color.WHITE }} />
+      ),
+      name: "bt_2",
+      position: 2,
+      buttonSize: 55,
+      color: Color.NAVYBLUE,
+    },
+  ];
+
   React.useEffect(() => {
     getPermissionAsync();
-    getUserData();
+    const unsubscribe = props.navigation.addListener("focus", () => {
+      getUserData();
+    });
+    return unsubscribe;
   }, []);
   const getUserData = async () => {
     setLoading(true);
@@ -290,7 +317,6 @@ const Profile = (props: Props) => {
             <Text style={{ fontSize: 25, fontWeight: "bold" }}>
               {user.fname} {user.lname}
             </Text>
-            <Text note>Freelance Developer</Text>
           </Row>
           <Row style={{ height: Layout.window.height * 0.4 }}>
             <List>
@@ -321,9 +347,7 @@ const Profile = (props: Props) => {
                   />
                 </Left>
                 <Body>
-                  <Text style={{ color: Color.BLACK }}>
-                    Gender {user.gender}
-                  </Text>
+                  <Text style={{ color: Color.BLACK }}>{user.gender}</Text>
                 </Body>
               </ListItem>
               <ListItem
@@ -353,6 +377,17 @@ const Profile = (props: Props) => {
           <Row style={{ height: Layout.window.height * 0.2 }}></Row>
         </Grid>
       </Content>
+      <FloatingAction
+        actions={actions}
+        color={Color.NAVYBLUE}
+        onPressItem={(name) => {
+          if (name === "bt_1") {
+            props.navigation.push("ProfileSetting");
+          } else {
+            props.navigation.push("EditProfile");
+          }
+        }}
+      />
     </Container>
   );
 };

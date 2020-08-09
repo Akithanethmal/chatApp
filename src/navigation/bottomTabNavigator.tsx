@@ -8,6 +8,7 @@ import Profile from '../screens/Profile';
 import Color from '../constants/Color';
 import NewFriends from '../screens/NewFriends';
 import EditProfile from '../screens/EditProfile';
+import ProfileSetting from '../screens/Chat/ProfileSettings';
 
 const BottomTab = createBottomTabNavigator<BottomTabParamList>();
 
@@ -74,6 +75,7 @@ function TabTwo(){
         <TabTwoStack.Navigator>
             <TabTwoStack.Screen name='Profile' component={Profile}/>
             <TabTwoStack.Screen name='EditProfile' component={EditProfile}/>
+            <TabTwoStack.Screen name='ProfileSetting' component={ProfileSetting}/>
         </TabTwoStack.Navigator>
     );
 }
