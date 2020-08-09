@@ -3,9 +3,9 @@ export type AuthParamList = {
   Register: undefined;
 };
 export type BottomTabParamList = {
-  TabOne: undefined;
-  TabTwo: undefined;
-  TabThree: undefined;
+  Chat: undefined;
+  Profile: undefined;
+  Home: undefined;
 };
 export type TabOneParamList = {
   ChatList: undefined;
@@ -18,7 +18,7 @@ export type TabTwoParamList = {
   ProfileSetting: undefined;
 };
 export type TabThreeParamList = {
-  NewFriends: undefined;
+  Home: undefined;
 };
 
 export type User = {

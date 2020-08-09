@@ -13,8 +13,6 @@ import {
   Button,
   Icon,
   Body,
-  Right,
-  Switch,
 } from "native-base";
 import Layout from "../constants/Layout";
 import Color from "../constants/Color";
@@ -27,7 +25,6 @@ import { AuthParamList, TabTwoParamList, User } from "../types";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RouteProp } from "@react-navigation/native";
 import Loading from "./Loading";
-import { FloatingAction } from "react-native-floating-action";
 
 type ProfileRouteProps = RouteProp<TabTwoParamList, "Profile">;
 type ProfileNavigationProps = StackNavigationProp<TabTwoParamList, "Profile">;
@@ -46,29 +43,6 @@ const Profile = (props: Props) => {
   const [coverImage, setCoverImage] = React.useState(" ");
   const [isLoading, setLoading] = React.useState(false);
   const [user, setUser] = React.useState<User>({});
-
-  const actions = [
-    {
-      text: "setting",
-      icon: (
-        <Icon name="settings" type="Ionicons" style={{ color: Color.WHITE }} />
-      ),
-      name: "bt_1",
-      position: 1,
-      buttonSize: 55,
-      color: Color.NAVYBLUE,
-    },
-    {
-      text: "edit",
-      icon: (
-        <Icon name="md-create" type="Ionicons" style={{ color: Color.WHITE }} />
-      ),
-      name: "bt_2",
-      position: 2,
-      buttonSize: 55,
-      color: Color.NAVYBLUE,
-    },
-  ];
 
   React.useEffect(() => {
     getPermissionAsync();
@@ -318,7 +292,7 @@ const Profile = (props: Props) => {
               {user.fname} {user.lname}
             </Text>
           </Row>
-          <Row style={{ height: Layout.window.height * 0.4 }}>
+          <Row style={{ height: Layout.window.height * 0.2 }}>
             <List>
               <ListItem
                 icon
@@ -374,20 +348,31 @@ const Profile = (props: Props) => {
               </ListItem>
             </List>
           </Row>
-          <Row style={{ height: Layout.window.height * 0.2 }}></Row>
         </Grid>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            height: Layout.window.height * 0.3,
+          }}
+        >
+          <Button
+            rounded
+            style={{ width: 200, justifyContent: "center", marginVertical: 10 }}
+            onPress={() => props.navigation.push("EditProfile")}
+          >
+            <Text>Edit Profile</Text>
+          </Button>
+          <Button
+            rounded
+            style={{ width: 200, justifyContent: "center", marginVertical: 10 }}
+            onPress={() => firebase.auth().signOut()}
+          >
+            <Text>Logout</Text>
+          </Button>
+        </View>
       </Content>
-      <FloatingAction
-        actions={actions}
-        color={Color.NAVYBLUE}
-        onPressItem={(name) => {
-          if (name === "bt_1") {
-            props.navigation.push("ProfileSetting");
-          } else {
-            props.navigation.push("EditProfile");
-          }
-        }}
-      />
     </Container>
   );
 };
